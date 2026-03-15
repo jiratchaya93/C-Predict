@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C-PREDICT — Carbon Analytics Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #0d1117;
+  --sb-bg:      #111820;
+  --card-bg:    #141c24;
+  --card-bg2:   #111820;
+  --border:     #1e2d3d;
+  --border-hi:  #2a4a3a;
+
+  --em:         #2ecc8a;
+  --em-dim:     rgba(46,204,138,.15);
+  --em-border:  rgba(46,204,138,.3);
+
+  --cy:         #22d3ee;
+  --am:         #f59e0b;
+  --am-dim:     rgba(245,158,11,.15);
+
+  --txt:        #e2e8f0;
+  --txt-2:      #94a3b8;
+  --txt-3:      #4a6175;
+
+  --ff:         'Inter', sans-serif;
+  --mono:       'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--txt); font-family: var(--ff); }
+
+/* ── TOPBAR ── */
+.topbar {
+  height: 56px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  background: var(--sb-bg);
+  border-bottom: 1px solid var(--border);
+  position: relative; z-index: 20; flex-shrink: 0;
+}
+.brand { display: flex; align-items: center; gap: 10px; min-width: 200px; }
+.brand-icon {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: var(--em-dim); border: 1px solid var(--em-border);
+  display: flex; align-items: center; justify-content: center; font-size: 17px;
+}
+.brand-name { font-size: 15px; font-weight: 700; color: var(--txt); letter-spacing: .01em; }
+.brand-sub  { font-size: 10px; color: var(--txt-3); margin-top: 1px; }
+
+.nav-center { display: flex; align-items: center; gap: 4px; }
+.nav-tab {
+  padding: 7px 18px; border-radius: 8px; border: none; background: transparent;
+  font-family: var(--ff); font-size: 13px; font-weight: 500; color: var(--txt-2); cursor: pointer;
+  transition: all .2s;
+}
+.nav-tab.on {
+  background: var(--txt); color: #0d1117; font-weight: 600;
+}
+.nav-tab:not(.on):hover { color: var(--txt); background: rgba(255,255,255,.05); }
+
+.topbar-right { display: flex; align-items: center; gap: 16px; min-width: 200px; justify-content: flex-end; }
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 8px; background: transparent; border: none;
+  color: var(--txt-2); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.icon-btn:hover { background: rgba(255,255,255,.06); }
+
+/* ── LAYOUT ── */
+.app { display: flex; height: calc(100vh - 56px); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 256px; flex-shrink: 0;
+  background: var(--sb-bg);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+.sidebar::-webkit-scrollbar { width: 2px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); }
+
+.sb-head {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sb-head-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.sb-head-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--em-dim); border: 1px solid var(--em-border);
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+}
+.sb-head-title { font-size: 15px; font-weight: 700; color: var(--txt); }
+.sb-head-sub   { font-size: 11px; color: var(--txt-3); margin-left: 42px; }
+
+/* Sections */
+.sb-sec { padding: 16px 18px; border-bottom: 1px solid var(--border); }
+.sec-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: var(--em); margin-bottom: 5px;
+}
+.sec-thai { font-size: 11px; color: var(--txt-3); margin-bottom: 12px; }
+
+/* Select */
+.sel-wrap { position: relative; margin-bottom: 12px; }
+.sel {
+  width: 100%; padding: 8px 30px 8px 12px;
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--txt); font-family: var(--ff); font-size: 12px; font-weight: 500;
+  outline: none; cursor: pointer; -webkit-appearance: none; appearance: none;
+  transition: border-color .2s;
+}
+.sel:hover, .sel:focus { border-color: rgba(46,204,138,.4); }
+.sel-caret { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--txt-3); font-size: 10px; pointer-events: none; }
+
+/* Slider */
+.slider-block { margin-bottom: 10px; }
+.slider-block:last-child { margin-bottom: 0; }
+.sl-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.sl-label { font-size: 11px; color: var(--txt-2); font-weight: 500; }
+.sl-val   { font-size: 12px; font-weight: 700; font-family: var(--mono); }
+.sl-track { position: relative; height: 4px; border-radius: 2px; background: rgba(255,255,255,.08); }
+.sl-fill  { position: absolute; top: 0; left: 0; height: 100%; border-radius: 2px; transition: width .08s; pointer-events: none; }
+.sl-thumb {
+  position: absolute; top: 50%; transform: translate(-50%,-50%);
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--sb-bg); pointer-events: none; transition: left .08s;
+}
+.sl-range {
+  position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; height: 20px; top: 50%; transform: translateY(-50%);
+}
+
+.mode-row {
+  display: flex; align-items: center; gap: 8px; margin-top: 8px;
+  padding: 8px 12px; border-radius: 8px;
+  background: var(--em-dim); border: 1px solid var(--em-border);
+  font-size: 12px; font-weight: 600; color: var(--em);
+}
+.mode-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--em); flex-shrink: 0; animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+
+/* Run button */
+.sb-footer { padding: 16px 18px; margin-top: auto; }
+.run-btn {
+  width: 100%; padding: 12px 16px; border-radius: 10px; border: none; cursor: pointer;
+  background: var(--em); font-family: var(--ff); font-size: 14px; font-weight: 700; color: #0a1a10;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 2px 20px rgba(46,204,138,.28);
+  transition: box-shadow .25s, transform .18s;
+}
+.run-btn-sub { font-size: 11px; font-weight: 400; opacity: .7; }
+.run-btn::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(120deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%);
+  transform: translateX(-120%); transition: transform .5s ease;
+}
+.run-btn:hover::after { transform: translateX(120%); }
+.run-btn:hover { box-shadow: 0 4px 32px rgba(46,204,138,.45); transform: translateY(-1px); }
+.run-btn:active { transform: translateY(0); }
+
+/* ── MAIN ── */
+.main { flex: 1; overflow-y: auto; background: var(--bg); padding: 28px 28px 24px; }
+.main::-webkit-scrollbar { width: 2px; }
+.main::-webkit-scrollbar-thumb { background: var(--border); }
+
+.main-title  { font-size: 22px; font-weight: 700; color: var(--txt); margin-bottom: 3px; }
+.main-sub    { font-size: 12px; color: var(--txt-2); margin-bottom: 22px; }
+.main-sub em { font-style: normal; color: var(--txt-3); }
+
+.section-eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--txt-3); margin-bottom: 12px;
+}
+
+/* ── KPI CARDS ── */
+.kpi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 22px; }
+.kpi {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px 22px;
+  position: relative; overflow: hidden;
+  animation: fadeUp .45s ease both;
+}
+.kpi:nth-child(1){animation-delay:.05s}
+.kpi:nth-child(2){animation-delay:.12s}
+.kpi:nth-child(3){animation-delay:.19s}
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)} }
+.kpi-label { font-size: 12px; font-weight: 500; color: var(--txt-2); margin-bottom: 2px; }
+.kpi-unit  { font-size: 10px; color: var(--txt-3); font-family: var(--mono); margin-bottom: 10px; }
+.kpi-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+.kpi-val   { font-size: 40px; font-weight: 800; color: var(--txt); line-height: 1; letter-spacing: -.03em; }
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: 7px; font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.tag-em { background: var(--em-dim); border: 1px solid var(--em-border); color: var(--em); }
+.tag-am { background: var(--am-dim); border: 1px solid rgba(245,158,11,.3); color: var(--am); }
+.tag-em-outline { background: transparent; border: 1.5px solid var(--em); color: var(--em); border-radius: 20px; }
+
+/* ── COMPARISON ROW ── */
+.cmp-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; }
+.chart-card {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px 22px;
+  display: flex; flex-direction: column;
+  animation: fadeUp .45s ease both;
+}
+.chart-card:nth-child(1){animation-delay:.25s}
+.chart-card:nth-child(2){animation-delay:.32s}
+.cc-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+.cc-title { font-size: 15px; font-weight: 700; color: var(--txt); }
+.cc-sub   { font-size: 11px; color: var(--txt-3); margin-bottom: 12px; }
+.legend-row { display: flex; gap: 16px; margin-bottom: 14px; }
+.leg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--txt-2); }
+.leg-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+/* ── BAR CHART ── */
+.bar-chart-wrap { 
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
+  margin-top: 10px;
+}
+.bar-chart-area {
+  flex: 1; position: relative; display: flex; align-items: flex-end;
+  min-height: 200px;
+}
+.y-grid {
+  position: absolute; inset: 0; pointer-events: none;
+  display: flex; flex-direction: column; justify-content: space-between; z-index: 1;
+}
+.y-line {
+  width: 100%; border-top: 1px solid rgba(255,255,255,.06);
+  position: relative;
+}
+.y-label {
+  position: absolute; left: 0; top: -9px;
+  font-size: 9px; color: var(--txt-3); font-family: var(--mono);
+}
+.bars-container { 
+  position: absolute; 
+  bottom: 0; left: 30px; 
+  right: 0; 
+  top: 0; 
+  display: flex; 
+  align-items: flex-end; 
+  z-index: 5;
+  pointer-events: none;
+}
+.week-group { 
+  flex: 1; 
+  display: flex; 
+  gap: 6px; 
+  align-items: flex-end; 
+  justify-content: center; 
+  height: 100%;
+}
+.bar-item {
+  flex: 1; max-width: 26px; border-radius: 4px 4px 0 0; position: relative;
+  transition: height 1s cubic-bezier(.22,1,.36,1);
+  cursor: default; pointer-events: auto;
+}
+.bar-item.cur { background: #3a4e62; }
+.bar-item.sim { background: var(--em); box-shadow: 0 0 10px rgba(46,204,138,.3); }
+.bar-num {
+  position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+  font-size: 9px; font-family: var(--mono); font-weight: 600; white-space: nowrap;
+}
+.bar-num.em { color: var(--em); }
+.bar-num.gr { color: var(--txt-3); }
+.x-labels { display: flex; padding: 8px 0 0 30px; }
+.x-lbl { flex: 1; text-align: center; font-size: 10px; color: var(--txt-3); font-family: var(--mono); }
+
+/* ── PIE CHART ── */
+.pie-wrap-outer { display: flex; flex-direction: column; flex: 1; }
+.pie-row { display: flex; align-items: center; gap: 18px; flex: 1; }
+.pie-svg-wrap { position: relative; flex-shrink: 0; width: 180px; height: 180px; }
+.pie-svg-wrap svg { width: 100%; height: 100%; }
+.pie-center-label {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  text-align: center; pointer-events: none;
+}
+.scope-list { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+.scope-row { display: flex; align-items: center; justify-content: space-between; }
+.scope-left { display: flex; align-items: center; gap: 8px; }
+.scope-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.scope-name { font-size: 12px; font-weight: 500; color: var(--txt-2); }
+.scope-pct  { font-size: 13px; font-weight: 700; color: var(--txt); font-family: var(--mono); }
+
+.footer-note { margin-top: 16px; font-size: 10px; color: var(--txt-3); text-align: center; }
+
+input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; width: 100%; cursor: pointer; }
+input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: rgba(255,255,255,.08); }
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; border-radius: 50%; margin-top: -5px;
+  border: 2px solid var(--sb-bg);
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">🌿</div>
+    <div>
+      <div class="brand-name">C-PREDICT</div>
+      <div class="brand-sub">Carbon Analytics Platform</div>
+    </div>
+  </div>
+  <nav class="nav-center">
+    <button class="nav-tab">Dashboard</button>
+    <button class="nav-tab on">Simulation</button>
+    <button class="nav-tab">Reports</button>
+    <button class="nav-tab">Settings</button>
+  </nav>
+  <div class="topbar-right">
+    <button class="icon-btn">🔔</button>
+    <button class="icon-btn">👤</button>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-head">
+      <div class="sb-head-row">
+        <div class="sb-head-icon">⚙️</div>
+        <div class="sb-head-title">Create Scenario</div>
+      </div>
+      <div class="sb-head-sub">สร้างสถานการณ์จำลอง</div>
+    </div>
+
+    <div class="sb-sec">
+      <div class="sec-title">⚡ Energy Mix</div>
+      <div class="sec-thai">แหล่งพลังงาน</div>
+      <div class="sel-wrap">
+        <select class="sel" id="sel-energy">
+          <option>Hydroelectric</option>
+          <option selected>Solar Rooftop</option>
+          <option>Wind Power</option>
+          <option>Nuclear</option>
+        </select>
+        <span class="sel-caret">▾</span>
+      </div>
+      <div class="slider-block">
+        <div class="sl-header">
+          <span class="sl-label">Solar contribution</span>
+          <span class="sl-val" id="val-solar" style="color:var(--em)">80%</span>
+        </div>
+        <div class="sl-track">
+          <div class="sl-fill" id="fill-solar" style="width:80%;background:linear-gradient(90deg,#00a86b,var(--em))"></div>
+          <div class="sl-thumb" id="thumb-solar" style="left:80%;background:var(--em);box-shadow:0 0 8px rgba(46,204,138,.6)"></div>
+          <input type="range" class="sl-range" id="range-solar" min="0" max="100" value="80">
+        </div>
+      </div>
+      <div class="sel-wrap" style="margin-top:14px">
+        <select class="sel" id="sel-grid">
+          <option selected>Diesel Generator</option>
+          <option>Grid (Electricity)</option>
+          <option>Natural Gas</option>
+        </select>
+        <span class="sel-caret">▾</span>
+      </div>
+      <div class="slider-block">
+        <div class="sl-header">
+          <span class="sl-label">Grid contribution</span>
+          <span class="sl-val" id="val-grid" style="color:var(--txt-2)">20%</span>
+        </div>
+        <div class="sl-track">
+          <div class="sl-fill" id="fill-grid" style="width:20%;background:linear-gradient(90deg,#3a4e62,#5a7a96)"></div>
+          <div class="sl-thumb" id="thumb-grid" style="left:20%;background:#7a9ab8;box-shadow:0 0 6px rgba(122,154,184,.5)"></div>
+          <input type="range" class="sl-range" id="range-grid" min="0" max="100" value="20">
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-sec">
+      <div class="sec-title">♻️ Raw Materials</div>
+      <div class="sec-thai">วัตถุดิบ</div>
+      <div class="sel-wrap">
+        <select class="sel">
+          <option>Recycled Steel Supplier A</option>
+          <option selected>Virgin Steel</option>
+          <option>Bio-composite Mix</option>
+        </select>
+        <span class="sel-caret">▾</span>
+      </div>
+      <div class="slider-block">
+        <div class="sl-header">
+          <span class="sl-label">Recycled content</span>
+          <span class="sl-val" id="val-recycle" style="color:var(--cy)">90%</span>
+        </div>
+        <div class="sl-track">
+          <div class="sl-fill" id="fill-recycle" style="width:90%;background:linear-gradient(90deg,#0891b2,var(--cy))"></div>
+          <div class="sl-thumb" id="thumb-recycle" style="left:90%;background:var(--cy);box-shadow:0 0 8px rgba(34,211,238,.5)"></div>
+          <input type="range" class="sl-range" id="range-recycle" min="0" max="100" value="90">
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-sec">
+      <div class="sec-title">🏭 Production Mode</div>
+      <div class="sec-thai">โหมดการผลิต</div>
+      <div class="sel-wrap">
+        <select class="sel">
+          <option selected>Eco Mode (Low Emission)</option>
+          <option>Standard Mode</option>
+          <option>High Output Mode</option>
+        </select>
+        <span class="sel-caret">▾</span>
+      </div>
+      <div class="mode-row">
+        <div class="mode-dot"></div>
+        Eco Mode (Low Emission)
+      </div>
+    </div>
+
+    <div class="sb-footer">
+      <button class="run-btn" id="run-btn">
+        <span>▶</span>
+        <span>Run Simulation</span>
+        <span class="run-btn-sub">(เริ่มการจำลอง)</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="main-title">Scenario Simulation</div>
+    <div class="main-sub">What-If Analysis for Carbon Footprint Reduction &nbsp;<em>(การวิเคราะห์สถานการณ์สมมติ)</em></div>
+
+    <div class="section-eyebrow">Key Performance Indicators</div>
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Total CFP</div>
+        <div class="kpi-unit">ตัน CO₂e</div>
+        <div class="kpi-bottom">
+          <div class="kpi-val">1,250</div>
+          <div class="tag tag-em">↓ &nbsp;-15%</div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">CFP per Unit</div>
+        <div class="kpi-unit">kg CO₂e</div>
+        <div class="kpi-bottom">
+          <div class="kpi-val">0.85</div>
+          <div class="tag tag-em-outline">✓ &nbsp;Passed CBAM</div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Total Cost</div>
+        <div class="kpi-unit">ล้านบาท</div>
+        <div class="kpi-bottom">
+          <div class="kpi-val">3.2</div>
+          <div class="tag tag-am">↑ &nbsp;+2%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-eyebrow">Comparison &amp; Insights</div>
+    <div class="cmp-row">
+      <div class="chart-card">
+        <div class="cc-head">
+          <div>
+            <div class="cc-title">Weekly Carbon Emissions</div>
+            <div class="cc-sub">การปล่อยคาร์บอนรายสัปดาห์</div>
+          </div>
+          <div class="tag tag-em" style="align-self:flex-start">↓ &nbsp;-15%</div>
+        </div>
+        <div class="legend-row">
+          <div class="leg"><div class="leg-dot" style="background:#3a4e62"></div> Current Status</div>
+          <div class="leg"><div class="leg-dot" style="background:var(--em)"></div> Simulated Status</div>
+        </div>
+        <div class="bar-chart-wrap">
+          <div class="bar-chart-area" id="bar-area">
+            <div class="y-grid">
+              <div class="y-line"><span class="y-label">400</span></div>
+              <div class="y-line"><span class="y-label">300</span></div>
+              <div class="y-line"><span class="y-label">200</span></div>
+              <div class="y-line"><span class="y-label">100</span></div>
+              <div class="y-line"><span class="y-label">0</span></div>
+            </div>
+            <div class="bars-container" id="bars-container"></div>
+          </div>
+          <div class="x-labels" id="x-labels"></div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="cc-head">
+          <div>
+            <div class="cc-title">Emission Breakdown</div>
+            <div class="cc-sub">สัดส่วนการปล่อยก๊าซเรือนกระจก (%)</div>
+          </div>
+        </div>
+        <div class="pie-wrap-outer">
+          <div class="pie-row">
+            <div class="pie-svg-wrap">
+              <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <filter id="glow-em">
+                    <feGaussianBlur stdDeviation="3" result="b"/>
+                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                </defs>
+                <circle cx="100" cy="100" r="70" fill="none" stroke="#1e2d3d" stroke-width="28"/>
+                <circle id="arc-s1" cx="100" cy="100" r="70" fill="none" stroke="#94a3b8" stroke-width="28" transform="rotate(-90 100 100)"/>
+                <circle id="arc-s2" cx="100" cy="100" r="70" fill="none" stroke="#22d3ee" stroke-width="28" transform="rotate(-90 100 100)"/>
+                <circle id="arc-s3" cx="100" cy="100" r="70" fill="none" stroke="#2ecc8a" stroke-width="28" transform="rotate(-90 100 100)" filter="url(#glow-em)"/>
+                <circle cx="100" cy="100" r="55" fill="#141c24"/>
+              </svg>
+              <div class="pie-center-label">
+                <div style="font-size:24px;font-weight:800;color:var(--txt);line-height:1;">CO₂e</div>
+                <div style="font-size:9px;color:var(--txt-3);font-family:var(--mono);letter-spacing:.08em;margin-top:4px;">EMISSIONS</div>
+              </div>
+            </div>
+            <div class="scope-list">
+              <div class="scope-row">
+                <div class="scope-left"><div class="scope-dot" style="background:#94a3b8"></div><div class="scope-name">Scope 1</div></div>
+                <div class="scope-pct">20%</div>
+              </div>
+              <div class="scope-row">
+                <div class="scope-left"><div class="scope-dot" style="background:#22d3ee"></div><div class="scope-name">Scope 2</div></div>
+                <div class="scope-pct">30%</div>
+              </div>
+              <div class="scope-row">
+                <div class="scope-left"><div class="scope-dot" style="background:#2ecc8a"></div><div class="scope-name">Scope 3</div></div>
+                <div class="scope-pct">50%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-note">Data simulated based on factory parameters &nbsp;·&nbsp; Last updated: March 2026</div>
+  </main>
+</div>
+
+<script>
+/* ─── SLIDERS ─── */
+function initSlider(rangeId, fillId, thumbId, valId) {
+  const range = document.getElementById(rangeId);
+  const fill  = document.getElementById(fillId);
+  const thumb = document.getElementById(thumbId);
+  const val   = document.getElementById(valId);
+  function update() {
+    const v = +range.value;
+    fill.style.width = v + '%';
+    thumb.style.left = v + '%';
+    val.textContent = v + '%';
+  }
+  range.addEventListener('input', update);
+}
+
+const rangeSolar = document.getElementById('range-solar');
+const rangeGrid  = document.getElementById('range-grid');
+
+function updateLinked() {
+  const sv = +rangeSolar.value;
+  const gv = 100 - sv;
+  rangeGrid.value = gv;
+  document.getElementById('fill-solar').style.width = sv + '%';
+  document.getElementById('thumb-solar').style.left = sv + '%';
+  document.getElementById('val-solar').textContent = sv + '%';
+  document.getElementById('fill-grid').style.width = gv + '%';
+  document.getElementById('thumb-grid').style.left = gv + '%';
+  document.getElementById('val-grid').textContent = gv + '%';
+}
+function updateLinkedFromGrid() {
+  const gv = +rangeGrid.value;
+  const sv = 100 - gv;
+  rangeSolar.value = sv;
+  updateLinked();
+}
+rangeSolar.addEventListener('input', updateLinked);
+rangeGrid.addEventListener('input', updateLinkedFromGrid);
+initSlider('range-recycle','fill-recycle','thumb-recycle','val-recycle');
+
+/* ─── BAR CHART ─── */
+const weeks = [
+  { label:'Week 1', cur:295, sim:250 },
+  { label:'Week 2', cur:340, sim:280 },
+  { label:'Week 3', cur:275, sim:230 },
+  { label:'Week 4', cur:310, sim:260 },
+];
+const maxH = 400; 
+const container = document.getElementById('bars-container');
+const xlabels = document.getElementById('x-labels');
+
+weeks.forEach((w,i) => {
+  const curH = (w.cur / maxH) * 100;
+  const simH = (w.sim / maxH) * 100;
+  container.insertAdjacentHTML('beforeend', `
+    <div class="week-group">
+      <div class="bar-item cur" id="bar-cur-${i}" style="height:0%" data-h="${curH}">
+        <span class="bar-num gr">${w.cur}</span>
+      </div>
+      <div class="bar-item sim" id="bar-sim-${i}" style="height:0%" data-h="${simH}">
+        <span class="bar-num em">${w.sim}</span>
+      </div>
+    </div>
+  `);
+  xlabels.insertAdjacentHTML('beforeend', `<div class="x-lbl">${w.label}</div>`);
+});
+
+function animateBars() {
+  document.querySelectorAll('.bar-item').forEach((b,i) => {
+    b.style.height = '0%';
+    setTimeout(() => { b.style.height = b.dataset.h + '%'; }, 100 + i * 50);
+  });
+}
+
+/* ─── PIE ANIMATE ─── */
+const CIRC = 2 * Math.PI * 70;
+const arcData = [
+  { id:'arc-s1', pct:.20 },
+  { id:'arc-s2', pct:.30 },
+  { id:'arc-s3', pct:.50 },
+];
+function animatePie() {
+  let currentOffset = 0;
+  arcData.forEach(a => {
+    const el = document.getElementById(a.id);
+    const len = CIRC * a.pct;
+    el.style.transition = 'none';
+    el.style.strokeDasharray = `0 ${CIRC}`;
+    el.style.strokeDashoffset = -currentOffset;
+    setTimeout(() => {
+      el.style.transition = 'stroke-dasharray 1.2s cubic-bezier(.22,1,.36,1)';
+      el.style.strokeDasharray = `${len} ${CIRC - len}`;
+    }, 100);
+    currentOffset += len;
+  });
+}
+
+// Initial Run
+setTimeout(() => { animateBars(); animatePie(); }, 500);
+
+document.getElementById('run-btn').addEventListener('click', () => {
+  animateBars();
+  animatePie();
+});
+</script>
+</body>
+</html>
